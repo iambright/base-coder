@@ -1,6 +1,6 @@
 {
   "name": "base-coder",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "base64 and base32 converter",
   "main": "./libs",
   "scripts": {
