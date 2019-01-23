@@ -3,12 +3,12 @@
  */
 /**
  * UTF16和UTF8转换对照表
- * U+00000000 – U+0000007F 	0xxxxxxx
- * U+00000080 – U+000007FF 	110xxxxx 10xxxxxx
- * U+00000800 – U+0000FFFF 	1110xxxx 10xxxxxx 10xxxxxx
- * U+00010000 – U+001FFFFF 	11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
- * U+00200000 – U+03FFFFFF 	111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
- * U+04000000 – U+7FFFFFFF 	1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+ * U+00000000 – U+0000007F    0xxxxxxx
+ * U+00000080 – U+000007FF    110xxxxx 10xxxxxx
+ * U+00000800 – U+0000FFFF    1110xxxx 10xxxxxx 10xxxxxx
+ * U+00010000 – U+001FFFFF    11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+ * U+00200000 – U+03FFFFFF    111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+ * U+04000000 – U+7FFFFFFF    1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
  */
 var BaseCoder = {
     // 转码表
@@ -153,24 +153,21 @@ var BaseCoder = {
         var i = 0; // 遍历索引
         var len = utf8.length;
         var res = [];
+        var s = 0, lastCode = 0;
         while (i < len) {
-            var j = 0, s = 0, lastCode = 0;
-            while (j < 5) {
-                var move = 8 - (5 - s);
-                var code = utf8.charCodeAt(i++) & 0xFF;
-                res.push(this.table32[((lastCode & at[s]) << (5 - s)) | ((code >> move) & 0x3F)]);
+            var move = 8 - (5 - s);
+            var code = utf8.charCodeAt(i++) & 0xFF;
+            res.push(this.table32[((lastCode & at[s]) << (5 - s)) | ((code >> move) & 0x3F)]);
+            s = move;
+            lastCode = code;
+            if (move > 4) {
+                move = move - 5;
+                res.push(this.table32[((code & at[s]) >> move) & 0x3F]);
                 s = move;
-                lastCode = code;
-                if (move > 4) {
-                    move = move - 5;
-                    res.push(this.table32[((code & at[s]) >> move) & 0x3F]);
-                    s = move;
-                }
-                if (i == len) {
-                    if (s) {
-                        res.push(this.table32[((code & at[s]) << (5 - move)) & 0x3F]);
-                    }
-                    break;
+            }
+            if (i == len) {
+                if (s) {
+                    res.push(this.table32[((code & at[s]) << (5 - move)) & 0x3F]);
                 }
             }
         }
@@ -216,33 +213,24 @@ var BaseCoder = {
         var len = str.length;
         var i = 0;
         var res = [];
+        var s = 0, lastCode = 0;
         while (i < len) {
-            var j = 0, s = 0, lastCode = 0;
-            while (j < 4) {
-                var code = this.table32.indexOf(str.charAt(i++));
-                if (i == len) {
-                    code = (code << 5);
-                } else {
-                    code = (code << 5) | this.table32.indexOf(str.charAt(i++));
-                }
-                var move = 10 - (8 - s);
-                res.push(String.fromCharCode((lastCode & at[s]) << (8 - s) | (code >> move)));
+            var code = this.table32.indexOf(str.charAt(i++));
+            if (i == len) {
+                code = (code << 5);
+            } else {
+                code = (code << 5) | this.table32.indexOf(str.charAt(i++));
+            }
+            var move = 10 - (8 - s);
+            res.push(String.fromCharCode((lastCode & at[s]) << (8 - s) | (code >> move)));
+            s = move;
+            lastCode = code;
+            if (move > 7) {
+                move = move - 8;
+                res.push(String.fromCharCode((code >> move) & at[8]));
                 s = move;
-                lastCode = code;
-                if (move > 7) {
-                    move = move - 8;
-                    res.push(String.fromCharCode((code >> move) & at[8]));
-                    s = move;
-                }
-                if (i == len) {
-                    if (s) {
-                        res.push(String.fromCharCode(((code & at[s]) << (8 - move)) & 0x3F));
-                    }
-                    break;
-                }
             }
         }
-
         return this.UTF8ToUTF16(res.join(''));
     }
 };
