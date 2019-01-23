@@ -1,6 +1,15 @@
 /**
  * Created by Bright on 2019/1/23.
  */
+/**
+ * UTF16和UTF8转换对照表
+ * U+00000000 – U+0000007F 	0xxxxxxx
+ * U+00000080 – U+000007FF 	110xxxxx 10xxxxxx
+ * U+00000800 – U+0000FFFF 	1110xxxx 10xxxxxx 10xxxxxx
+ * U+00010000 – U+001FFFFF 	11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+ * U+00200000 – U+03FFFFFF 	111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+ * U+04000000 – U+7FFFFFFF 	1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+ */
 var BaseCoder = {
     // 转码表
     table: [
@@ -226,7 +235,6 @@ var BaseCoder = {
                     s = move;
                 }
                 if (i == len) {
-                    res.push(String.fromCharCode((code >> move) & at[8]));
                     if (s) {
                         res.push(String.fromCharCode(((code & at[s]) << (8 - move)) & 0x3F));
                     }
